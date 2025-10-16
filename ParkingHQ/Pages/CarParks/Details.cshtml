@@ -1,0 +1,171 @@
+﻿@page
+@using ParkingHQ.Utility
+@model ParkingHQ.Web.Pages.CarParks.DetailsModel
+@{
+    int tableCol = 10;
+    int index = 0;
+    var parkingLotOccupancy = Model.currentCarpark.GetParkingLotUsage();
+
+}
+
+        <div class="container p-3 w-75">
+            <h2>Details</h2>
+            <hr />
+
+            <div class="row">
+                <div class="col-sm">
+                    <h3> Car Park: @Model.currentCarpark.Name</h3>
+                    @Model.currentCarpark.Street <br />
+                    @Model.currentCarpark.ZipCode @Model.currentCarpark.City <br /> 
+                </div>
+            </div>
+            <hr />
+            <div class="row mt-3">
+                <div class="col-sm">
+                    <h4>Floors</h4> <br>
+                    <table class="table table-bordered table-striped" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Visitors
+                                </th>
+                                <th>
+                                    Tenants
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        
+                     <td width="50%">
+
+                    
+                    @foreach (var floor in  Model.currentCarpark.Floors)
+                    {
+                    <table class="table table-bordered table-striped" style="width:100%">
+
+                        <thead>
+                            <tr>
+                                <th>
+                                                    @floor.Name
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <td>
+                        Free parking spaces:  @floor.ParkingLots.Count(x => x.IsPermanentTenant == false && x.IsOccupied == false);
+                        <br />
+                        Occupied parking spaces: @floor.ParkingLots.Count(x => x.IsPermanentTenant == false && x.IsOccupied == true);
+                        <br />
+                                    </td>
+                        </tbody>
+                    </table>
+                    }
+
+                    </td>
+                        <td width="50%">
+
+                                @foreach (var floor in  Model.currentCarpark.Floors)
+                                {
+                                <table class="table table-bordered table-striped" style="width:100%">
+
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                    @floor.Name
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    <td>
+                                        Free parking spaces:  @floor.ParkingLots.Count(x => x.IsPermanentTenant == true && x.IsOccupied == false);
+                                        <br />
+                                        Occupied parking spaces: @floor.ParkingLots.Count(x => x.IsPermanentTenant == true && x.IsOccupied == true);
+                                        <br />
+                                    </td>
+                                    </tbody>
+                                </table>
+                                }
+
+                        </td>
+                        </tbody>
+                             </table>
+
+
+                    </div>
+
+            </div>
+        </div>
+
+
+
+
+
+
+<div class="container p-3 w-50">
+
+    @foreach(var obj in Model.currentCarpark.Floors)
+    {
+    <hr />
+    <h4> Floor: @obj.Name </h4>
+
+        index = 0;
+        <table class="table table-bordered">
+        
+@*        @for(int i = 0; i < tableCol; i++)
+        {
+            <th style="width: 5%"></th>
+        }*@
+
+        <tr>
+
+        @foreach (var floor in obj.ParkingLots)
+        {
+
+            string background = "";
+            if (floor.IsPermanentTenant)
+            {
+                background = " class=bg-warning";    
+                    
+            }
+
+            if(floor.IsOccupied)
+            {
+                <td @background>@floor.ParkinLotNumber <i class="bi bi-car-front-fill red"></i></td>
+            }
+            else
+            {
+                <td  @background>@floor.ParkinLotNumber <i class="bi bi-car-front-fill green"></i></td>
+            }
+
+
+            index++;
+
+            @if(index == tableCol)
+            {
+                @:</tr>
+                @:<tr>
+                index = 0;
+            }
+        }
+
+
+        </tr>
+        </table>
+
+    }
+
+
+</div>
+
+<style>
+    .green {
+    color: lime;
+}
+    .red {
+    color: red;
+}
+
+.table td {
+   text-align: center;   
+}
+</style>

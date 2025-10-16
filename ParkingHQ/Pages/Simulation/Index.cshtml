@@ -1,0 +1,39 @@
+﻿@page
+@model ParkingHQ.Web.Pages.Simulation.IndexModel
+@{
+}
+
+<div class="container p-3">
+    <table class="table table-bordered table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>
+                    Car Park Name
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var obj in Model.CarParks)
+            {
+                <tr>
+                    <td width="50%">
+                        @obj.Name
+                    </td>
+                    <td>
+                        <div class="w-75 btnbtn-group" role="group">
+                            <div class="d-grid col-5">
+                                <a asp-page="NewTicket" asp-route-id="@obj.Id" class="btn btn-success mx-2 btn-sm" ><i class="bi bi-box-arrow-in-right"></i> Simulate Entry with Ticket</a> <br>
+                                <a asp-page="ExitTicket" asp-route-id="@obj.Id" class="btn btn-danger mt-1 mx-2 btn-sm"><i class="bi bi-box-arrow-right"></i> Simulate Exit with Ticket</a>
+                                <hr>
+                                <a asp-page="Tenant/TenantEntry" asp-route-id="@obj.Id" class="btn btn-success mx-2 btn-sm"><i class="bi bi-box-arrow-in-right"></i> Simulate Entry with Tenant</a> <br>
+                                <a asp-page="Tenant/TenantExit" asp-route-id="@obj.Id" class="btn btn-danger mt-1 mx-2 btn-sm"><i class="bi bi-box-arrow-right"></i> Simulate Exit with Tenant</a>
+
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

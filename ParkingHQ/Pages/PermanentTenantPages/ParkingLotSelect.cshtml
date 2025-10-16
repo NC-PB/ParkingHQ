@@ -1,0 +1,35 @@
+﻿@page
+@model ParkingHQ.Web.Pages.PermanentTenantPages.ParkingLotSelectModel
+@{
+}
+
+<div class="container p-3">
+    <table class="table table-bordered table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>
+                    Parking Lot Number
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var obj in Model.Lot)
+            {
+                if (!obj.IsOccupied && !obj.IsPermanentTenant)
+                {
+                    <tr>
+                        <td width="50%">
+                            @obj.ParkinLotNumber
+                        </td>
+                        <td>
+                            <div class="w-75 btnbtn-group" role="group">
+                                <a asp-page="ParkingLotConfirm" asp-route-tenantid="@Model.TenantId" asp-route-lotid="@obj.Id" class="btn btn-primary mx-2"><i class="bi bi-check2"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

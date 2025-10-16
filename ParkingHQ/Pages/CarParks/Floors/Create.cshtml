@@ -1,0 +1,32 @@
+﻿@page
+@model ParkingHQ.Web.Pages.CarParks.Floors.CreateModel
+@{
+}
+
+
+
+<form method="post">
+    @*<input type="hidden" name="CarPark" value="@Model.CarPark" />*@
+    <input asp-for="@Model.CarPark.Id" hidden/>
+    <div class="border p-3 mt-4">
+        <div class="row pb-2">
+            <h2 class="text-primary">Create Floor</h2>
+            <hr />
+        </div>
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div class="mb-3">
+            <label asp-for="Floor.Name"></label>
+            <input asp-for="@Model.Floor.Name" class="form-control" />
+            <span asp-validation-for="@Model.Floor.Name" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Floor.ParkingLots"></label>
+            <input asp-for="@Model.ParkingLotsCount" class="form-control" />
+            <span asp-validation-for="@Model.ParkingLotsCount" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:150px">Create</button>
+        <a asp-page="Index" asp-route-id="@Model.CarPark.Id" class="btn btn-secondary" style="width:150px">Back to List</a>
+    </div>
+</form>

@@ -1,0 +1,53 @@
+﻿@page
+@model ParkingHQ.Web.Pages.CarParks.CreateModel
+@{
+}
+
+
+<form method="post">
+    <div class="border p-3 mt-4">
+        <div class="row pb-2">
+            <h2 class="text-primary">Create Car Park</h2>
+            <hr />
+        </div>
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div class="mb-3">
+            <label asp-for="CarPark.Name"></label>
+            <input asp-for="@Model.CarPark.Name" class="form-control" />
+            <span asp-validation-for="@Model.CarPark.Name" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="CarPark.Street"></label>
+            <input asp-for="@Model.CarPark.Street" class="form-control" />
+            <span asp-validation-for="@Model.CarPark.Street" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="CarPark.City"></label>
+            <input asp-for="@Model.CarPark.City" class="form-control" />
+            <span asp-validation-for="@Model.CarPark.City" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="CarPark.ZipCode"></label>
+            <input asp-for="@Model.CarPark.ZipCode" class="form-control" />
+            <span asp-validation-for="@Model.CarPark.ZipCode" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="CarPark.DailyTariff"></label>
+            <input asp-for="@Model.CarPark.DailyTariff" class="form-control" />
+            <span asp-validation-for="@Model.CarPark.DailyTariff" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="CarPark.MonthlyRent"></label>
+            <input asp-for="@Model.CarPark.MonthlyRent" class="form-control" />
+            <span asp-validation-for="@Model.CarPark.MonthlyRent" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:150px">Create</button>
+        <a asp-page="Index" class="btn btn-secondary" style="width:150px">Back to List</a>
+    </div>
+</form>

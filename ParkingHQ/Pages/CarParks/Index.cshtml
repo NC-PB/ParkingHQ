@@ -1,0 +1,68 @@
+﻿@page
+@model ParkingHQ.Web.Pages.CarParks.IndexModel
+@{
+}
+
+
+
+<div class="container p-3">
+    <div class="row pt-4">
+        <div class="col-6">
+            <h2 class="text-primary">Car Parks</h2>
+        </div>
+        <div class="col-6 text-end">
+            <a asp-page="create" class="btn btn-primary float-right"><i class="bi bi-plus-square"></i> &nbsp; Create New Car Park</a>
+        </div>
+    </div>
+    <br /> <br />
+
+    <table class="table table-bordered table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>
+                    Car Park Name and Address
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var obj in Model.CarParks)
+            {
+                <tr>
+                    <td width="50%">
+                        <h4> @obj.Name </h4> <br>
+                        @obj.Street <br>
+                        @obj.City <br>
+                        @obj.ZipCode <br>
+                    </td>
+                    <td>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="w-75 btnbtn-group" role="group">
+                                        <div class="d-grid">
+                                            <a asp-page="Edit" asp-route-id="@obj.Id" class="btn btn-primary mx-2"><i class="bi bi-pencil-square"></i></a>
+                                            <a asp-page="Delete" asp-route-id="@obj.Id" class="btn btn-danger mt-1 mx-2"><i class="bi bi-trash-fill"></i></a> <br>
+                                            <a asp-page="Floors/Index" asp-route-id="@obj.Id" class="btn btn-secondary mt-1 mx-2 btn-sm"> <i class="bi bi-building-gear" data-toggle="tooltip" data-placement="top" title="Manage floors"></i>&nbsp;Manage Floors</a><br>
+                                            <a asp-page="Details" asp-route-id="@obj.Id" class="btn btn-secondary mt-1 mx-2 btn-sm"> <i class="bi bi-search" data-toggle="tooltip" data-placement="top" title="Details"></i>&nbsp;Details</a><br>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="w-75 btnbtn-group" role="group">
+                                        <div class="d-grid">
+                                            <a asp-page="Tariff/CreateWeekdayTariff" asp-route-id="@obj.Id" class="btn mt-1 btn-warning mx-2 btn-sm"><i class="bi bi-cash-coin"></i>&nbsp;Manage Weekday Tariffs</a><br>
+                                            <a asp-page="Tariff/CreateHolidayTariff" asp-route-id="@obj.Id" class="btn mt-1 btn-warning mx-2 btn-sm"><i class="bi bi-cash-coin"></i>&nbsp;Manage Holiday Tariffs</a><br>
+                                            <a asp-page="Holidays/CreateHolidays" asp-route-id="@obj.Id" class="btn mt-1 btn-warning mx-2 btn-sm"><i class="bi bi-calendar-date"></i>&nbsp;Manage Holiday Dates</a><br>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

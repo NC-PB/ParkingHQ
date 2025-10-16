@@ -1,0 +1,93 @@
+﻿@page
+@model ParkingHQ.Web.Pages.Evaluation.CarParkTransactionsModel
+
+@{
+    ViewData["Title"] = "CarParkEntryExit";
+}
+
+<h1>Transactions</h1>
+
+
+<form asp-page-handler="Filter" method="post" class="row g-3">
+    <input type="hidden" name="CarparkId" value="@Model.CarParkId" />
+    <div class="col-auto">
+        <label>From:</label>
+        <input asp-for="@Model.DateFrom" class="form-control"/>
+    </div>
+    <div class="col-auto">
+        <label>To:</label>
+        <input asp-for="@Model.DateTo" class="form-control"/>
+    </div>
+    @*<span asp-validation-for="@Model.CarPark.ZipCode" class="text-danger"></span>*@
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary mb-0">Filter</button>
+    </div>
+</form>
+
+<form asp-page-handler="Reset" method="post">
+    <input type="hidden" name="CarparkId" value="@Model.CarParkId" />
+    <button class="btn btn-danger"><i class="bi bi-trash-fill"></i> Reset Filter</button>
+</form>
+
+
+<hr />
+<h3>Tenants</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Date and Time
+            </th>
+            <th>
+                Price
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.EntryExitTenant)
+        {
+        <tr>
+            <td>
+                @item.TransactionDate
+            </td>
+            <td>
+                @item.Amount
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+
+<hr />
+<h3>Visitor</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Date and Time
+            </th>
+            <th>
+                Price
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.EntryExitVisitor)
+        {
+            <tr>
+                <td>
+                    @item.TransactionDate
+                </td>
+                <td>
+                    @item.Amount
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<form asp-page-handler="DownloadFile" method="post">
+                <input type="hidden" name="CarparkId" value="@Model.CarParkId" />
+                <button class="btn btn-danger"><i class="bi bi-trash-fill"></i> Download</button>
+    <a asp-page="Index" class="btn btn-secondary" style="width:150px">Back to List</a>
+</form>

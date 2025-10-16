@@ -1,0 +1,120 @@
+﻿@page
+@model ParkingHQ.Web.Pages.Evaluation.CarParkEntryExitModel
+
+@{
+    ViewData["Title"] = "CarParkEntryExit";
+}
+
+<h1>Entry and Exit</h1>
+
+
+<form asp-page-handler="Filter" method="post" class="row g-3">
+    <input type="hidden" name="CarparkId" value="@Model.CarParkId" />
+    <div class="col-auto">
+        <label>From:</label>
+        <input asp-for="@Model.DateFrom" class="form-control"/>
+    </div>
+    <div class="col-auto">
+        <label>To:</label>
+        <input asp-for="@Model.DateTo" class="form-control"/>
+    </div>
+    @*<span asp-validation-for="@Model.CarPark.ZipCode" class="text-danger"></span>*@
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary mb-0">Filter</button>
+    </div>
+</form>
+
+<form asp-page-handler="Reset" method="post">
+    <input type="hidden" name="CarparkId" value="@Model.CarParkId" />
+    <button class="btn btn-danger"><i class="bi bi-trash-fill"></i> Reset Filter</button>
+</form>
+
+
+<hr />
+<h3>Tenants</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Date and Time
+            </th>
+            <th>
+                Entry/Exit
+            </th>
+            <th>
+                Visitor
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.EntryExitTenant)
+        {
+        <tr>
+            <td>
+                @item.DateAndTime
+            </td>
+            <td>
+                @item.EntryExitType
+            </td>
+            <td>
+                @if(item.PermanentTenant != null)
+                {
+                        @item.PermanentTenant.FirstName
+                        @item.PermanentTenant.LastName
+                    }
+                else
+                {
+                    @:Visitor
+                }
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+
+<hr />
+<h3>Visitor</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Date and Time
+            </th>
+            <th>
+                Entry/Exit
+            </th>
+            <th>
+                Visitors
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.EntryExitVisitor)
+        {
+            <tr>
+                <td>
+                    @item.DateAndTime
+                </td>
+                <td>
+                    @item.EntryExitType
+                </td>
+                <td>
+                    @if (item.PermanentTenant != null)
+                    {
+                        @item.PermanentTenant.FirstName
+                        @item.PermanentTenant.LastName
+                    }
+                    else
+                    {
+                        @:Visitor
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<form asp-page-handler="DownloadFile" method="post">
+                <input type="hidden" name="CarparkId" value="@Model.CarParkId" />
+                <button class="btn btn-danger"><i class="bi bi-trash-fill"></i> Download</button>
+</form>

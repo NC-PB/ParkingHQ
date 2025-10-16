@@ -1,0 +1,60 @@
+﻿@page
+@model ParkingHQ.Web.Pages.CarParks.EditModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>CarPark</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="CarPark.Id" />
+            <div class="form-group">
+                <label asp-for="CarPark.Name" class="control-label"></label>
+                <input asp-for="CarPark.Name" class="form-control" />
+                <span asp-validation-for="CarPark.Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CarPark.Street" class="control-label"></label>
+                <input asp-for="CarPark.Street" class="form-control" />
+                <span asp-validation-for="CarPark.Street" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CarPark.City" class="control-label"></label>
+                <input asp-for="CarPark.City" class="form-control" />
+                <span asp-validation-for="CarPark.City" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CarPark.ZipCode" class="control-label"></label>
+                <input asp-for="CarPark.ZipCode" class="form-control" />
+                <span asp-validation-for="CarPark.ZipCode" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CarPark.DailyTariff" class="control-label"></label>
+                <input asp-for="CarPark.DailyTariff" class="form-control" />
+                <span asp-validation-for="CarPark.DailyTariff" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CarPark.MonthlyRent" class="control-label"></label>
+                <input asp-for="CarPark.MonthlyRent" class="form-control" />
+                <span asp-validation-for="CarPark.MonthlyRent" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

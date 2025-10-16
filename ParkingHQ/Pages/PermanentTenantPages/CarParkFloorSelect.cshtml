@@ -1,0 +1,32 @@
+﻿@page
+@model ParkingHQ.Web.Pages.PermanentTenantPages.CarParkFloorSelectModel
+@{
+}
+
+<div class="container p-3">
+    <table class="table table-bordered table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>
+                    Floor Name
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var obj in Model.Floors)
+            {
+                    <tr>
+                        <td width="50%">
+                        @obj.Name
+                        </td>
+                        <td>
+                            <div class="w-75 btnbtn-group" role="group">
+                            <a asp-page="ParkingLotSelect" asp-route-tenantid="@Model.PermanentTenantId" asp-route-floorid="@obj.Id" class="btn btn-primary mx-2"><i class="bi bi-check2"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+            }
+        </tbody>
+    </table>
+</div>

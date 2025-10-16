@@ -1,0 +1,60 @@
+﻿@page
+@using ParkingHQ.Utility
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+</div>
+
+
+<div class="">
+    @foreach(var obj in Model.CarParks)
+    {
+        <h3>@obj.Name</h3>
+
+        <br />
+        <div class="container">
+            <div class="row">
+                <div class="col-sm">
+                    @obj.Street <br />
+                    @obj.ZipCode @obj.City <br /> 
+                </div>
+            </div>
+        </div>
+
+
+        
+        var parkingLotOccupancy = obj.GetParkingLotUsage();
+
+
+
+        double CurrentOccupancyInPercent = (double)parkingLotOccupancy["OCCUPIED_REGULAR"] / (double)(parkingLotOccupancy["FREE_REGULAR"] + parkingLotOccupancy["OCCUPIED_REGULAR"]) * 100;
+        double CurrentOccupancyInPercentTenant = (double)parkingLotOccupancy["OCCUPIED_TENANT"] / (double)(parkingLotOccupancy["FREE_TENANT"] + parkingLotOccupancy["OCCUPIED_TENANT"]) * 100;
+
+        <div class="mt-3">
+
+        Total Parkinglots: @parkingLotOccupancy["TOTAL"] <br>
+
+        </div>
+
+        <h4>
+            Current capacity utilization
+        </h4>
+        @:Visitors:
+        <div class="progress">
+            <div class="progress-bar bg-danger" role="progressbar" style="width: @CurrentOccupancyInPercent%" aria-valuenow="@CurrentOccupancyInPercent" aria-valuemin="0" aria-valuemax="10">@parkingLotOccupancy["OCCUPIED_REGULAR"]</div>
+            <div class="progress-bar bg-success" role="progressbar" style="width: @(100-CurrentOccupancyInPercent)%" aria-valuenow="@CurrentOccupancyInPercent" aria-valuemin="0" aria-valuemax="100">@parkingLotOccupancy["FREE_REGULAR"]</div>
+        </div>
+
+        @:Tenants:
+        <div class="progress">
+            <div class="progress-bar bg-danger" role="progressbar" style="width: @CurrentOccupancyInPercentTenant%" aria-valuenow="@CurrentOccupancyInPercentTenant" aria-valuemin="0" aria-valuemax="10">@parkingLotOccupancy["OCCUPIED_TENANT"]</div>
+            <div class="progress-bar bg-success" role="progressbar" style="width: @(100-CurrentOccupancyInPercentTenant)%" aria-valuenow="@CurrentOccupancyInPercentTenant" aria-valuemin="0" aria-valuemax="100">@parkingLotOccupancy["FREE_TENANT"]</div>
+        </div>
+        <hr />
+    }
+
+</div>

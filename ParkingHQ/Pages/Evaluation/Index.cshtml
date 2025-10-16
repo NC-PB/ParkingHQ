@@ -1,0 +1,49 @@
+﻿@page
+@model ParkingHQ.Web.Pages.Evaluation.IndexModel
+@{
+}
+
+
+
+
+<div class="container p-3">
+    <br /> <br />
+
+    <table class="table table-bordered table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>
+                    Car Park Name
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var obj in Model.CarParks)
+            {
+                <tr>
+                    <td width="50%">
+                        <h4> @obj.Name </h4> <br>
+                        @obj.Street <br>
+                        @obj.City <br>
+                        @obj.ZipCode <br>
+                    </td>
+                    <td>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="w-75 btnbtn-group" role="group">
+                                        <div class="d-grid">
+                                            <a asp-page="CarParkEntryExit" asp-route-id="@obj.Id" class="btn mt-1 btn-warning mx-2 btn-sm"><i class="bi bi-cash-coin"></i>&nbsp;Show Entry and Exit</a><br>
+                                            <a asp-page="CarParkTransactions" asp-route-id="@obj.Id" class="btn mt-1 btn-warning mx-2 btn-sm"><i class="bi bi-cash-coin"></i>&nbsp;Show Transactions</a><br>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

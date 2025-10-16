@@ -1,0 +1,70 @@
+﻿@page
+@model ParkingHQ.Web.Pages.PermanentTenantPages.ParkingLotConfirmModel
+@{
+}
+
+
+<form method="post">
+
+    <input hidden asp-for="Tenant.Id"/>
+    <input hidden asp-for="Lot.Id" />
+
+
+    @*<input type="hidden" name="CarPark" value="@Model.CarPark" />*@
+    <div class="border p-3 mt-4">
+        <div class="row pb-2">
+            <h2 class="text-primary">Confirm</h2>
+            <hr />
+        </div>
+
+        <div class="border p-3 mt-4">
+            <div class="row pb-2">
+                <h2 class="text-primary">Tenant:</h2>
+                <hr />
+
+                <div class="mb-3">
+                    <label asp-for="Tenant.FirstName"></label>
+                    <input asp-for="@Model.Tenant.FirstName" class="form-control" disabled/>
+                    <span asp-validation-for="@Model.Tenant.FirstName" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Tenant.LastName"></label>
+                    <input asp-for="@Model.Tenant.LastName" class="form-control" disabled/>
+                    <span asp-validation-for="@Model.Tenant.LastName" class="text-danger"></span>
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="border p-3 mt-4">
+            <div class="row pb-2">
+                <h2 class="text-primary">Parking Lot:</h2>
+
+                <div class="mb-3">
+                    <label asp-for="SelectedCarPark.Name"></label>
+                    <input asp-for="@Model.SelectedCarPark.Name" class="form-control" disabled />
+                    <span asp-validation-for="@Model.SelectedCarPark.Name" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="SelectedCarParkFloor.Name"></label>
+                    <input asp-for="@Model.SelectedCarParkFloor.Name" class="form-control" disabled />
+                    <span asp-validation-for="@Model.SelectedCarParkFloor.Name" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Lot.ParkinLotNumber"></label>
+                    <input asp-for="@Model.Lot.ParkinLotNumber" class="form-control" disabled />
+                    <span asp-validation-for="@Model.Lot.ParkinLotNumber" class="text-danger"></span>
+                </div>
+
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:150px">Create</button>
+        <a asp-page="Index" asp-route-id="@Model.Tenant.Id" class="btn btn-secondary" style="width:150px">Back to List</a>
+    </div>
+</form>
+

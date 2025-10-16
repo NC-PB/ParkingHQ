@@ -1,0 +1,129 @@
+﻿@page
+@model ParkingHQ.Web.Pages.PermanentTenantPages.CarParkSelectModel
+@{
+}
+
+
+<h4>Currently asigned Parking Lots</h4>
+
+<div class="container p-3">
+    <table class="table table-bordered table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>
+                    Car Park Name
+                </th>
+                <th>
+                    Floor
+                </th>
+                <th>
+                    Parking Lot Number
+                </th>
+                <th>
+                    Pin
+                </th>
+                <th>
+                    Status
+                </th>
+                <th>
+                    Last payment
+                </th>
+
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var obj in Model.CarParkSelectHelper)
+            {
+                <tr>
+                    <td>
+                        @obj.sCarPark.Name
+                    </td>
+                    <td>
+                        @obj.sCarParkFloor.Name
+                    </td>
+                    <td>
+                        @obj.sParkingLots.ParkinLotNumber
+                    </td>
+                    <td>
+                        @obj.pin
+                    </td>
+                    
+                        @if(obj.sParkingLots.IsOccupied)
+                        {
+                                    <td class="bg-danger">
+                                        Occupied
+                                    </td>
+                        }
+                        else
+                        {
+                                    <td class="bg-success">
+                                        Free
+                                    </td>
+                        }
+
+                    
+                    <td>
+                        @obj.LastPayment
+                    </td>
+
+                    <td>
+
+                                            
+                        <div class="w-100 btn-group" role="group">
+                            <form asp-page-handler="delete" method="post">
+                                <input type="hidden" name="id" value="@obj.sPermanentTenantParkingLotId"/>
+                                <input type="hidden" name="TenantId" value="@Model.PermanentTenant.Id" />
+
+                                @*<a asp-page="Delete" asp-route-id="@obj.Id" class="btn btn-danger mx-2"></a>*@
+                                    <button class="btn btn-danger"><i class="bi bi-trash-fill"></i> Delete</button>
+                            </form>
+                            <form asp-page-handler="pay" method="post">
+                                <input type="hidden" name="id" value="@obj.sPermanentTenantParkingLotId" />
+                                <input type="hidden" name="TenantId" value="@Model.PermanentTenant.Id" />
+
+                                @*<a asp-page="Delete" asp-route-id="@obj.Id" class="btn btn-danger mx-2"></a>*@
+                                <button class="btn btn-danger"><i class="bi bi-trash-fill"></i> Update Payment</button>
+                            </form>
+                        </div>
+                 
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<hr />
+<h4>Assign new Parking lot</h4>
+
+
+
+
+<div class="container p-3">
+    <table class="table table-bordered table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>
+                    Car Park Name
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var obj in Model.CarParks)
+            {
+                <tr>
+                    <td width="50%">
+                        @obj.Name
+                    </td>
+                    <td>
+                        <div class="w-75 btnbtn-group" role="group">
+                            <a asp-page="CarParkFloorSelect" asp-route-tenant="@Model.PermanentTenant.Id" asp-route-carpark="@obj.Id" class="btn btn-primary mx-2"><i class="bi bi-check2"></i></a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

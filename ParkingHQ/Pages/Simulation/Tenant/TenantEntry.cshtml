@@ -1,0 +1,34 @@
+﻿@page
+@model ParkingHQ.Web.Pages.Simulation.Tenant.TenantEntryModel
+@{
+}
+
+
+<h4>Enter your PIN</h4>
+<hr />
+<div class="row">
+    @if (Model.Message == String.Empty)
+    {
+        <div class="col-md-4">
+            <form method="post">
+                <input asp-for="CarParkId" class="form-control" hidden/>
+
+                <div class="form-group">
+                    <input asp-for="Pin" class="form-control" />
+                    <span asp-validation-for="Pin" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mt-3">
+                    <input type="submit" value="Enter" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+    }
+    else
+    {
+        <div class="col-md-4">
+            <hr>
+            <h4>@Model.Message</h4>
+        </div>
+    }
+</div>
