@@ -1,18 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Routing;
 using ParkingHQ.DataAccess.Repository.IRepository;
 using ParkingHQ.Models;
 using ParkingHQ.Utility;
-using System.Drawing;
 
 namespace ParkingHQ.Web.Pages.PermanentTenantPages
 {
     public class ParkingLotConfirmModel : PageModel
     {
         private readonly IUnitOfWork _unitOfWork;
-
-
+        private readonly TenantUtility _tenantUtility;
 
         [BindProperty]
         public PermanentTenant Tenant { get; set; }
@@ -26,12 +23,11 @@ namespace ParkingHQ.Web.Pages.PermanentTenantPages
         [BindProperty]
         public CarParkFloor SelectedCarParkFloor { get; set; }
 
-        public ParkingLotConfirmModel(IUnitOfWork unitOfWork)
+        public ParkingLotConfirmModel(IUnitOfWork unitOfWork, TenantUtility tenantUtility)
         {
             _unitOfWork = unitOfWork;
+            _tenantUtility = tenantUtility;
         }
-
-
 
         public async Task OnGet(int tenantid, int lotid)
         {
@@ -43,47 +39,24 @@ namespace ParkingHQ.Web.Pages.PermanentTenantPages
 
         public async Task<IActionResult> OnPost()
         {
-            //Load the ParkingLot and PermanentTenant from the database
-            var TenantFromDb = await _unitOfWork.PermanentTenant.GetFirstOrDefault(u => u.Id == Tenant.Id);
-            var LotFromDb = await _unitOfWork.ParkingLot.GetFirstOrDefault(u => u.Id == Lot.Id);
+            var tenantFromDb = await _unitOfWork.PermanentTenant.GetFirstOrDefault(u => u.Id == Tenant.Id);
+            var lotFromDb = await _unitOfWork.ParkingLot.GetFirstOrDefault(u => u.Id == Lot.Id);
 
-            //Update Status of the paking lot
-            LotFromDb.IsPermanentTenant = true;
-            _unitOfWork.ParkingLot.Update(LotFromDb);
+            lotFromDb.IsPermanentTenant = true;
+            _unitOfWork.ParkingLot.Update(lotFromDb);
             await _unitOfWork.Save();
 
-            //Create a new PermanentTenantParkingLot object
-            PermanentTenantParkingLot permanentTenantParkingLog = new PermanentTenantParkingLot();
+            PermanentTenantParkingLot tenantParkingLot = new PermanentTenantParkingLot
+            {
+                ParkingLot = lotFromDb,
+                Pin = _tenantUtility.GeneratePermanentTenantPin()
+            };
 
-            //Set the properties of the PermanentTenantParkingLot object
-            permanentTenantParkingLog.ParkingLot = LotFromDb;
-
-            //Generate a new PIN
-            TenantUtility tenantUtiliy = new TenantUtility(_unitOfWork);
-            permanentTenantParkingLog.Pin = tenantUtiliy.GeneratePermanentTenantPin();
-
-
-            TenantFromDb.PermanentTenantParkingLots.Add(permanentTenantParkingLog);
-            _unitOfWork.PermanentTenant.Update(TenantFromDb);
-            _unitOfWork.Save();
-
-            //var categoryFromDb = _db.Categorys.Find(Category.Id);
-            //if (categoryFromDb != null)
-            //{
-            //    _db.Categorys.Remove(categoryFromDb);
-            //    await _db.SaveChangesAsync();
-            //    TempData["success"] = "Category has been deleted.";
-
-            //    return RedirectToPage("Index");
-            //}
+            tenantFromDb.PermanentTenantParkingLots.Add(tenantParkingLot);
+            _unitOfWork.PermanentTenant.Update(tenantFromDb);
+            await _unitOfWork.Save();
 
             return RedirectToPage("CarParkSelect", new { id = Tenant.Id });
-
-            //return Page();
-
         }
-
-
-
     }
 }

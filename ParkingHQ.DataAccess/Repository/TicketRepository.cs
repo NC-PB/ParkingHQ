@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ParkingHQ.DataAccess.Repository.IRepository;
 using ParkingHQ.Models;
 using System;
@@ -18,43 +18,29 @@ namespace ParkingHQ.DataAccess.Repository
             _db = db;
         }
 
-        public void Save()
-        {
-            _db.SaveChanges();
-        }
-
         public void Update(Ticket obj)
         {
             _db.Tickets.Update(obj);
         }
 
-
-        public List<Ticket> GetTicketsFromCarPark(int Id)
+        public async Task<List<Ticket>> GetTicketsFromCarParkAsync(int id)
         {
-            //Get all Tickets from a CarPark by ID of CarPark
-            //var tickets = _db.Tickets.Where(x => x.ParkingLot.CarPark.Id == id).ToList();
+            var park = await _db.CarParks
+                .Include(m => m.Floors).ThenInclude(m => m.ParkingLots)
+                .SingleOrDefaultAsync(x => x.Id == id);
 
-
-            var park = _db.CarParks.Include(m => m.Floors).ThenInclude(m => m.ParkingLots).SingleOrDefaultAsync(x => x.Id == Id).Result;
-
-            //load all parkinglots from park in a list
             var parkingLots = park.Floors.SelectMany(x => x.ParkingLots).ToList();
 
-            //Find all tickets from parkinglots in list
-            var tickets = _db.Tickets.Where(x => parkingLots.Contains(x.ParkingLot)).ToList();
-
-            return tickets;
+            return await _db.Tickets
+                .Where(x => parkingLots.Contains(x.ParkingLot))
+                .ToListAsync();
         }
 
-        public Ticket GetTicketByTicketId(int Id)
+        public async Task<Ticket> GetTicketByTicketIdAsync(int id)
         {
-            var ticket = _db.Tickets
+            return await _db.Tickets
                 .Include(m => m.ParkingLot)
-                .Where(x => x.TicketId == Id)
-                .SingleOrDefaultAsync().Result;
-            return ticket;
+                .SingleOrDefaultAsync(x => x.TicketId == id);
         }
-
-
     }
 }

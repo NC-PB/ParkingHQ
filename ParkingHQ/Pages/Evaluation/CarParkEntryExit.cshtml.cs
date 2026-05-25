@@ -1,12 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using ParkingHQ.DataAccess;
 using ParkingHQ.DataAccess.Repository.IRepository;
 using ParkingHQ.Models;
 
@@ -22,7 +20,6 @@ namespace ParkingHQ.Web.Pages.Evaluation
         [BindProperty]
         public IEnumerable<EntryExit> EntryExitVisitor { get; set; } = default!;
 
-
         [BindProperty]
         public int CarParkId { get; set; }
 
@@ -34,31 +31,34 @@ namespace ParkingHQ.Web.Pages.Evaluation
 
         public CarParkEntryExitModel(IUnitOfWork unitOfWork)
         {
-            _unitOfWork= unitOfWork;
+            _unitOfWork = unitOfWork;
         }
-
 
         public async Task OnGetAsync(int id)
         {
-            var entryExit = await _unitOfWork.EntryExit.GetEntryExitByCarParkId(id);
-            EntryExitVisitor = entryExit.Where(x => x.PermanentTenant == null);
-            EntryExitTenant = entryExit.Where(x => x.PermanentTenant != null);
+            var entryExits = await _unitOfWork.EntryExit.GetEntryExitByCarParkId(id);
+            EntryExitVisitor = entryExits.Where(x => x.PermanentTenant == null);
+            EntryExitTenant = entryExits.Where(x => x.PermanentTenant != null);
 
             CarParkId = id;
             DateFrom = DateTime.Now;
-            DateTo= DateTime.Now;
+            DateTo = DateTime.Now;
         }
 
-
-
-        public ActionResult OnPostFilter(int CarparkId)
+        public async Task<ActionResult> OnPostFilterAsync(int CarparkId)
         {
-            var entryExit = _unitOfWork.EntryExit.GetEntryExitByCarParkId(CarparkId).Result;
-            
-            //Filter by Date
-            //
-            EntryExitVisitor = entryExit.Where(x => x.PermanentTenant == null && (x.DateAndTime.Date >= DateFrom.Date && x.DateAndTime.Date <= DateTo.Date)).ToList();
-            EntryExitTenant = entryExit.Where(x => x.PermanentTenant != null && (x.DateAndTime.Date >= DateFrom.Date && x.DateAndTime.Date <= DateTo.Date)).ToList();
+            var entryExits = await _unitOfWork.EntryExit.GetEntryExitByCarParkId(CarparkId);
+
+            EntryExitVisitor = entryExits
+                .Where(x => x.PermanentTenant == null
+                    && x.DateAndTime.Date >= DateFrom.Date
+                    && x.DateAndTime.Date <= DateTo.Date)
+                .ToList();
+            EntryExitTenant = entryExits
+                .Where(x => x.PermanentTenant != null
+                    && x.DateAndTime.Date >= DateFrom.Date
+                    && x.DateAndTime.Date <= DateTo.Date)
+                .ToList();
 
             CarParkId = CarparkId;
             DateFrom = DateTime.Now;
@@ -66,12 +66,11 @@ namespace ParkingHQ.Web.Pages.Evaluation
             return Page();
         }
 
-
-        public ActionResult OnPostReset(int CarparkId)
+        public async Task<ActionResult> OnPostResetAsync(int CarparkId)
         {
-            var entryExit = _unitOfWork.EntryExit.GetEntryExitByCarParkId(CarparkId).Result;
-            EntryExitVisitor = entryExit.Where(x => x.PermanentTenant == null);
-            EntryExitTenant = entryExit.Where(x => x.PermanentTenant != null);
+            var entryExits = await _unitOfWork.EntryExit.GetEntryExitByCarParkId(CarparkId);
+            EntryExitVisitor = entryExits.Where(x => x.PermanentTenant == null);
+            EntryExitTenant = entryExits.Where(x => x.PermanentTenant != null);
 
             CarParkId = CarparkId;
             DateFrom = DateTime.Now;
@@ -79,78 +78,26 @@ namespace ParkingHQ.Web.Pages.Evaluation
             return Page();
         }
 
-
-
-        public ActionResult OnPostDownloadFile(int CarparkId)
+        public async Task<ActionResult> OnPostDownloadFileAsync(int CarparkId)
         {
-            var entryExit =  _unitOfWork.EntryExit.GetEntryExitByCarParkId(CarparkId).Result;
-
-            //EntryExitVisitor = entryExit.Where(x => x.PermanentTenant == null);
-            //EntryExitTenant = entryExit.Where(x => x.PermanentTenant != null);
-
-            string list = ListToCSV(entryExit);
-
-            byte[] bytes = Encoding.UTF8.GetBytes(list);
+            var entryExits = await _unitOfWork.EntryExit.GetEntryExitByCarParkId(CarparkId);
+            string csv = ListToCSV(entryExits);
+            byte[] bytes = Encoding.UTF8.GetBytes(csv);
             return File(bytes, "text/plain", "file.txt");
         }
 
-
-
-
-        private string CreateCSV(IEnumerable<EntryExit> list)
-        {
-            StringBuilder sList = new StringBuilder();
-
-            sList.Append("DateTime;Type;Tenant;");
-            sList.Append(Environment.NewLine);
-
-            string separator = ";";
-
-            foreach (var element in list)
-            {
-                sList.Append(element.DateAndTime);
-                sList.Append(separator);
-                sList.Append(element.EntryExitType.ToString());
-                sList.Append(separator);
-                if (element.PermanentTenant != null)
-                {
-                    sList.Append(element.PermanentTenant.FirstName + " " + element.PermanentTenant.LastName);
-                }
-                else
-                {
-                    sList.Append(" ");
-                }
-                sList.Append(separator);
-                sList.Append(element.Parkinglot.ParkinLotNumber);
-                sList.Append(Environment.NewLine);
-            }
-
-            return sList.ToString();
-        }
-
-
-
-
-
-
         private string ListToCSV<T>(IEnumerable<T> list)
         {
-            StringBuilder sList = new StringBuilder();
-
-            Type type = typeof(T);
-            var props = type.GetProperties();
-            sList.Append(string.Join(",", props.Select(p => p.Name)));
-            sList.Append(Environment.NewLine);
+            var sb = new StringBuilder();
+            var props = typeof(T).GetProperties();
+            sb.AppendLine(string.Join(",", props.Select(p => p.Name)));
 
             foreach (var element in list)
             {
-                sList.Append(string.Join(",", props.Select(p => p.GetValue(element, null))));
-                sList.Append(Environment.NewLine);
+                sb.AppendLine(string.Join(",", props.Select(p => p.GetValue(element, null))));
             }
 
-            return sList.ToString();
+            return sb.ToString();
         }
-
-
     }
 }

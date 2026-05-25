@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using ParkingHQ.DataAccess.Repository.IRepository;
 using ParkingHQ.Models;
 using ParkingHQ.Utility;
@@ -10,19 +8,25 @@ namespace ParkingHQ.Web.Pages.Simulation
 {
     public class ExitTicketModel : PageModel
     {
-
         private readonly IUnitOfWork _unitOfWork;
-        private ParkingHQ.Utility.ParkingUtility _parkingUtility;
+        private readonly ParkingUtility _parkingUtility;
+        private readonly EntryExitUtility _entryExitUtility;
+        private readonly TransactionUtility _transactionUtility;
 
-        public ExitTicketModel(IUnitOfWork unitOfWork)
+        public ExitTicketModel(
+            IUnitOfWork unitOfWork,
+            ParkingUtility parkingUtility,
+            EntryExitUtility entryExitUtility,
+            TransactionUtility transactionUtility)
         {
             _unitOfWork = unitOfWork;
+            _parkingUtility = parkingUtility;
+            _entryExitUtility = entryExitUtility;
+            _transactionUtility = transactionUtility;
         }
-
 
         [BindProperty]
         public Ticket Ticket { get; set; } = default!;
-
 
         [BindProperty]
         public DateTime DateTimeExit { get; set; }
@@ -33,39 +37,24 @@ namespace ParkingHQ.Web.Pages.Simulation
         public void OnGet()
         {
             Tariff = 0;
-            DateTimeExit= DateTime.Now;
-
+            DateTimeExit = DateTime.Now;
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            _parkingUtility = new Utility.ParkingUtility(_unitOfWork);
-            EntryExitUtility _entryExitUtility = new EntryExitUtility(_unitOfWork);
-            TransactionUtility transactionUtility = new TransactionUtility(_unitOfWork);
+            Ticket = await _unitOfWork.Ticket.GetTicketByTicketIdAsync(Ticket.TicketId);
 
-            Ticket = _unitOfWork.Ticket.GetTicketByTicketId(Ticket.TicketId);
-
-
-            //Calculate the tariff to pay and update the ticket
-            //
             Ticket.ExitTime = DateTimeExit;
-            Tariff = _parkingUtility.CalcTariffs(Ticket);
+            Tariff = await _parkingUtility.CalcTariffAsync(Ticket);
             Ticket.Price = Tariff;
             Ticket.ParkingLot.IsOccupied = false;
             _unitOfWork.Ticket.Update(Ticket);
             await _unitOfWork.Save();
 
-
-
             await _entryExitUtility.AddVisitorExit(Ticket.ParkingLot.Id);
-
-            await transactionUtility.TicketPay(Ticket);
-
+            await _transactionUtility.TicketPay(Ticket);
 
             return Page();
-
-            //return RedirectToPage("./Index");
         }
-
     }
 }

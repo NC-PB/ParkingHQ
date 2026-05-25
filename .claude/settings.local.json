@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /s /b)",
+      "PowerShell(Get-ChildItem -Recurse -Force | Select-Object FullName | ForEach-Object { $_.FullName -replace [regex]::Escape\\(\\(Get-Location\\).Path + '\\\\'\\), '' } | Sort-Object)",
+      "Bash(dotnet build *)"
+    ]
+  }
+}

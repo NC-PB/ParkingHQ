@@ -17,7 +17,7 @@ namespace ParkingHQ.DataAccess.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.3")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -93,22 +93,22 @@ namespace ParkingHQ.DataAccess.Migrations
                     b.Property<int>("EntryExitType")
                         .HasColumnType("int");
 
-                    b.Property<int>("ParkinglotId")
+                    b.Property<int>("ParkingLotId")
                         .HasColumnType("int");
 
                     b.Property<int?>("PermanentTenantId")
                         .HasColumnType("int");
 
-                    b.Property<int>("carParkId")
+                    b.Property<int>("CarParkId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ParkinglotId");
+                    b.HasIndex("ParkingLotId");
 
                     b.HasIndex("PermanentTenantId");
 
-                    b.HasIndex("carParkId");
+                    b.HasIndex("CarParkId");
 
                     b.ToTable("EntryExits");
                 });
@@ -179,7 +179,7 @@ namespace ParkingHQ.DataAccess.Migrations
                     b.Property<bool>("IsPermanentTenant")
                         .HasColumnType("bit");
 
-                    b.Property<int>("ParkinLotNumber")
+                    b.Property<int>("ParkingLotNumber")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -347,9 +347,9 @@ namespace ParkingHQ.DataAccess.Migrations
 
             modelBuilder.Entity("ParkingHQ.Models.EntryExit", b =>
                 {
-                    b.HasOne("ParkingHQ.Models.ParkingLot", "Parkinglot")
+                    b.HasOne("ParkingHQ.Models.ParkingLot", "ParkingLot")
                         .WithMany()
-                        .HasForeignKey("ParkinglotId")
+                        .HasForeignKey("ParkingLotId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -357,17 +357,17 @@ namespace ParkingHQ.DataAccess.Migrations
                         .WithMany()
                         .HasForeignKey("PermanentTenantId");
 
-                    b.HasOne("ParkingHQ.Models.CarPark", "carPark")
+                    b.HasOne("ParkingHQ.Models.CarPark", "CarPark")
                         .WithMany("EntryExits")
-                        .HasForeignKey("carParkId")
+                        .HasForeignKey("CarParkId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Parkinglot");
+                    b.Navigation("ParkingLot");
 
                     b.Navigation("PermanentTenant");
 
-                    b.Navigation("carPark");
+                    b.Navigation("CarPark");
                 });
 
             modelBuilder.Entity("ParkingHQ.Models.Holiday", b =>

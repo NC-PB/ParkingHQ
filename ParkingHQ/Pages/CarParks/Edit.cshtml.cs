@@ -54,7 +54,7 @@ namespace ParkingHQ.Web.Pages.CarParks
 
 
             _unitOfWork.CarPark.Update(CarPark);
-            _unitOfWork.Save();
+            await _unitOfWork.Save();
 
 
 

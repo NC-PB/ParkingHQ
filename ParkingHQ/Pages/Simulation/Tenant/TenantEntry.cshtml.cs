@@ -8,9 +8,9 @@ namespace ParkingHQ.Web.Pages.Simulation.Tenant
 {
     public class TenantEntryModel : PageModel
     {
-
         private readonly IUnitOfWork _unitOfWork;
-        private TenantUtility _tenantUtility;
+        private readonly TenantUtility _tenantUtility;
+        private readonly EntryExitUtility _entryExitUtility;
 
         [BindProperty]
         public int Pin { get; set; }
@@ -21,46 +21,41 @@ namespace ParkingHQ.Web.Pages.Simulation.Tenant
         [BindProperty]
         public int CarParkId { get; set; }
 
-        public TenantEntryModel(IUnitOfWork unitOfWork)
+        public TenantEntryModel(
+            IUnitOfWork unitOfWork,
+            TenantUtility tenantUtility,
+            EntryExitUtility entryExitUtility)
         {
             _unitOfWork = unitOfWork;
+            _tenantUtility = tenantUtility;
+            _entryExitUtility = entryExitUtility;
         }
-
 
         public void OnGet(int Id)
         {
-            Message = String.Empty;
-            CarParkId= Id;
+            Message = string.Empty;
+            CarParkId = Id;
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            _tenantUtility = new TenantUtility(_unitOfWork);
-
-            if (_tenantUtility.AuthenticateTenant(Pin, CarParkId))
+            if (await _tenantUtility.AuthenticateTenantAsync(Pin, CarParkId))
             {
                 Message = "Entry allowed";
-                PermanentTenantParkingLot tPermTen = _unitOfWork.PermanentTenantParkingLot.GetWithPropertysByPin(Pin);
-                tPermTen.ParkingLot.IsOccupied = true;
+                PermanentTenantParkingLot tenantLot = await _unitOfWork.PermanentTenantParkingLot.GetWithPropertysByPinAsync(Pin);
+                tenantLot.ParkingLot.IsOccupied = true;
 
-                EntryExitUtility _entryExitUtility = new EntryExitUtility(_unitOfWork);
-                await _entryExitUtility.AddTenantEntry(tPermTen.ParkingLot.Id);
+                await _entryExitUtility.AddTenantEntry(tenantLot.ParkingLot.Id);
 
-                _unitOfWork.ParkingLot.Update(tPermTen.ParkingLot);
+                _unitOfWork.ParkingLot.Update(tenantLot.ParkingLot);
                 await _unitOfWork.Save();
-
             }
             else
             {
                 Message = "Entry denied";
             }
 
-          return Page();
-            
-
+            return Page();
         }
-
-
-
     }
 }

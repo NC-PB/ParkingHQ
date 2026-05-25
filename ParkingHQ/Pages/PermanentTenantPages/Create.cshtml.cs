@@ -29,8 +29,8 @@ namespace ParkingHQ.Web.Pages.PermanentTenantPages
                 return Page();
             }
 
-            _unitOfWork.PermanentTenant.Add(PermanentTenant);
-            _unitOfWork.Save();
+            await _unitOfWork.PermanentTenant.Add(PermanentTenant);
+            await _unitOfWork.Save();
 
             return RedirectToPage("Index");
         }

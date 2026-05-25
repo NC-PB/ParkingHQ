@@ -41,7 +41,7 @@ namespace ParkingHQ.Web.Pages.CarParks.Floors
             for (int i = 0; i < ParkingLotsCount; i++)
             {
                 int LotNumber = i + 1;
-                Floor.ParkingLots.Add(new ParkingLot() { IsOccupied = false, IsPermanentTenant = false, ParkinLotNumber = LotNumber}); ;
+                Floor.ParkingLots.Add(new ParkingLot() { IsOccupied = false, IsPermanentTenant = false, ParkingLotNumber = LotNumber });
             }
 
 

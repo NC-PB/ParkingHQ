@@ -3,16 +3,14 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using ParkingHQ.DataAccess.Repository.IRepository;
 using ParkingHQ.Models;
 using ParkingHQ.Utility;
-using System.Collections.Immutable;
 
 namespace ParkingHQ.Web.Pages.Simulation.Tenant
 {
     public class TenantExitModel : PageModel
     {
-
         private readonly IUnitOfWork _unitOfWork;
-        private TenantUtility _tenantUtility;
-        private TransactionUtility _transactionUtility;
+        private readonly TenantUtility _tenantUtility;
+        private readonly EntryExitUtility _entryExitUtility;
 
         [BindProperty]
         public int Pin { get; set; }
@@ -23,54 +21,41 @@ namespace ParkingHQ.Web.Pages.Simulation.Tenant
         [BindProperty]
         public int CarParkId { get; set; }
 
-        public TenantExitModel(IUnitOfWork unitOfWork)
+        public TenantExitModel(
+            IUnitOfWork unitOfWork,
+            TenantUtility tenantUtility,
+            EntryExitUtility entryExitUtility)
         {
             _unitOfWork = unitOfWork;
+            _tenantUtility = tenantUtility;
+            _entryExitUtility = entryExitUtility;
         }
-
 
         public void OnGet(int Id)
         {
-            Message = String.Empty;
-            CarParkId= Id;
+            Message = string.Empty;
+            CarParkId = Id;
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            _tenantUtility = new TenantUtility(_unitOfWork);
-
-            if (_tenantUtility.AuthenticateTenant(Pin, CarParkId, true))
+            if (await _tenantUtility.AuthenticateTenantAsync(Pin, CarParkId, exit: true))
             {
                 Message = "Exit allowed";
 
-                // Data
-                //
-                PermanentTenantParkingLot tPermTen = _unitOfWork.PermanentTenantParkingLot.GetWithPropertysByPin(Pin);
-                tPermTen.ParkingLot.IsOccupied = false;
-                _unitOfWork.PermanentTenantParkingLot.Update(tPermTen);
+                PermanentTenantParkingLot tenantLot = await _unitOfWork.PermanentTenantParkingLot.GetWithPropertysByPinAsync(Pin);
+                tenantLot.ParkingLot.IsOccupied = false;
+                _unitOfWork.PermanentTenantParkingLot.Update(tenantLot);
                 await _unitOfWork.Save();
 
-
-                //Transaction
-                //
-
-                EntryExitUtility _entryExitUtility = new EntryExitUtility(_unitOfWork);
-                await _entryExitUtility.AddTenantExit(tPermTen.ParkingLot.Id);
-
-
-
+                await _entryExitUtility.AddTenantExit(tenantLot.ParkingLot.Id);
             }
             else
             {
                 Message = "Exit denied";
             }
 
-          return Page();
-            
-
+            return Page();
         }
-
-
-
     }
 }

@@ -31,9 +31,9 @@ namespace ParkingHQ.DataAccess.Repository
 
         public async Task<List<EntryExit>> GetEntryExitByCarParkId(int carParkId) 
         {
-            var result = await _db.EntryExits.Where(x => x.carPark.Id == carParkId)
+            var result = await _db.EntryExits.Where(x => x.CarPark.Id == carParkId)
                 .Include(x => x.PermanentTenant)
-                .Include(x => x.Parkinglot)
+                .Include(x => x.ParkingLot)
                 .ToListAsync();
             return result;
         }

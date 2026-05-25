@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections;
+using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using ParkingHQ.DataAccess.Repository.IRepository;
@@ -14,7 +11,13 @@ namespace ParkingHQ.Utility
 {
     public class ParkingUtility
     {
+        private const int TariffBlockMinutes = 15;
+        private const int BlocksPerHour = 60 / TariffBlockMinutes;
+        private const int TicketIdMin = 1000;
+        private const int TicketIdMax = 9999;
+
         private readonly IUnitOfWork _unitOfWork;
+
         public ParkingUtility(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
@@ -25,229 +28,175 @@ namespace ParkingHQ.Utility
             CarParkFloor floorToUse = new CarParkFloor();
             int occupationRate = 0;
 
-
             foreach (var floor in carPark.Floors)
             {
-                int freeParkingSpaces = floor.ParkingLots.Where(p => p.IsOccupied == false && !p.IsPermanentTenant).Count();
+                int freeParkingSpaces = floor.ParkingLots.Count(p => !p.IsOccupied && !p.IsPermanentTenant);
                 int totalParkingSpaces = floor.ParkingLots.Count();
-
                 int floorOccupationRate = (freeParkingSpaces * 100) / totalParkingSpaces;
 
                 if (floorOccupationRate > occupationRate)
                 {
                     occupationRate = floorOccupationRate;
-                    floorToUse= floor;
+                    floorToUse = floor;
                 }
             }
-           
-            ParkingLot parkingLotToUse = floorToUse.ParkingLots.Where(p => p.IsOccupied == false && !p.IsPermanentTenant).FirstOrDefault();
 
-            return parkingLotToUse;
-
+            return floorToUse.ParkingLots.FirstOrDefault(p => !p.IsOccupied && !p.IsPermanentTenant);
         }
 
-        public int GenerateTicketId(List<Ticket> tickets)
-        { 
-
-            Random random = new Random();
-            int ticketId = random.Next(1000, 9999);
-
-            while(tickets.Where(t => t.TicketId == ticketId && t.ExitTime == DateTime.MinValue).Count() > 0)
-            {
-                ticketId = random.Next(1000, 9999);
-            }
-
-            return ticketId;
-        }
-
-        public decimal CalcTariffs(Ticket ticket)
+        public async Task<decimal> CalcTariffAsync(Ticket ticket)
         {
-            //Load CarPark with TariffData
-            //
-            CarPark carPark = _unitOfWork.CarPark.LoadByParkingLot(ticket.ParkingLot.Id).Result;
-            carPark = _unitOfWork.CarPark.LoadWithTariffData(carPark.Id).Result;
+            CarPark carPark = await _unitOfWork.CarPark.LoadByParkingLot(ticket.ParkingLot.Id);
+            carPark = await _unitOfWork.CarPark.LoadWithTariffData(carPark.Id);
 
-
-            //Calculate chargable entry and exit time in 15min blocks
-            //
-            DateTime chargableEntryTime = GetChargabelEntryTime(ticket.EntryTime);
-            DateTime chargableExitTime = GetChargabelExitTime(ticket.ExitTime);
-
- 
+            DateTime chargableEntryTime = GetChargableEntryTime(ticket.EntryTime);
+            DateTime chargableExitTime = GetChargableExitTime(ticket.ExitTime);
 
             decimal hours = (decimal)(chargableExitTime - chargableEntryTime).TotalHours;
+
             if (hours > 24)
             {
-                //Calculate daily tariff
-                decimal tariff = carPark.DailyTariff;
-                
-                var days = hours / 24.0m;
-
-                days = Math.Ceiling(days);
-
-                decimal result = tariff * days;
-                return result;
-
+                decimal days = Math.Ceiling(hours / 24.0m);
+                return carPark.DailyTariff * days;
             }
-            else
-            {
-                var result = CalcHourTariff(carPark, ticket);
-                return result;
-            }
+
+            return CalcHourTariff(carPark, ticket);
         }
 
         private decimal CalcHourTariff(CarPark carPark, Ticket ticket)
         {
-           
-            if(ticket.EntryTime.Date != ticket.ExitTime.Date) 
+            if (ticket.EntryTime.Date != ticket.ExitTime.Date)
             {
-                
+                throw new NotSupportedException("Overnight parking spanning midnight is not yet supported.");
             }
 
-            //Check if it is a weekend
-            //
-            if (ticket.EntryTime.Date.DayOfWeek == DayOfWeek.Saturday || ticket.EntryTime.Date.DayOfWeek == DayOfWeek.Sunday)
+            if (ticket.EntryTime.DayOfWeek == DayOfWeek.Saturday || ticket.EntryTime.DayOfWeek == DayOfWeek.Sunday)
             {
-                return CalcTariffsHoliiday(GetChargabelEntryTime(ticket.EntryTime), GetChargabelExitTime(ticket.ExitTime), carPark.HolidayTariff);
+                return CalcTariffsHoliday(
+                    GetChargableEntryTime(ticket.EntryTime),
+                    GetChargableExitTime(ticket.ExitTime),
+                    carPark.HolidayTariff);
             }
 
-            //Check if it is a Holiday
-            //
-            foreach (var holiday in carPark.Holidays) 
+            foreach (var holiday in carPark.Holidays)
             {
                 if (ticket.EntryTime.Date == holiday.HolidayDate.Date)
                 {
-                    return CalcTariffsHoliiday(GetChargabelEntryTime(ticket.EntryTime), GetChargabelExitTime(ticket.ExitTime), carPark.HolidayTariff);
+                    return CalcTariffsHoliday(
+                        GetChargableEntryTime(ticket.EntryTime),
+                        GetChargableExitTime(ticket.ExitTime),
+                        carPark.HolidayTariff);
                 }
             }
 
-            //We have a regular weekday
-            //
-            return CalcTariffsWeekday(GetChargabelEntryTime(ticket.EntryTime), GetChargabelExitTime(ticket.ExitTime), carPark.WeekdayTariff);
+            return CalcTariffsWeekday(
+                GetChargableEntryTime(ticket.EntryTime),
+                GetChargableExitTime(ticket.ExitTime),
+                carPark.WeekdayTariff);
         }
 
-        DateTime GetChargabelEntryTime(DateTime entryTime)
+        private DateTime GetChargableEntryTime(DateTime entryTime)
         {
-            int roundedMinutes = (entryTime.Minute / 15) * 15;
-            if (roundedMinutes > entryTime.Minute)
-            {
-                roundedMinutes -= 15;
-            }
-
+            int roundedMinutes = (entryTime.Minute / TariffBlockMinutes) * TariffBlockMinutes;
             return new DateTime(entryTime.Year, entryTime.Month, entryTime.Day, entryTime.Hour, roundedMinutes, 0);
         }
 
-        DateTime GetChargabelExitTime(DateTime exitTime)
+        private DateTime GetChargableExitTime(DateTime exitTime)
         {
-
-
-            int roundedMinutes = (exitTime.Minute / 15) * 15;
+            int roundedMinutes = (exitTime.Minute / TariffBlockMinutes) * TariffBlockMinutes;
             if (roundedMinutes < exitTime.Minute)
             {
-                roundedMinutes += 15;
+                roundedMinutes += TariffBlockMinutes;
             }
 
-            if(roundedMinutes == 60)
+            if (roundedMinutes == 60)
             {
                 roundedMinutes = 0;
                 exitTime = exitTime.AddHours(1);
             }
 
-            var test = new DateTime(exitTime.Year, exitTime.Month, exitTime.Day, exitTime.Hour, roundedMinutes, 0);
-
-            return test;
+            return new DateTime(exitTime.Year, exitTime.Month, exitTime.Day, exitTime.Hour, roundedMinutes, 0);
         }
 
-
-        decimal CalcTariffsWeekday(DateTime entry, DateTime exit, IEnumerable<WeekdayTariffSection> sections)
+        private decimal CalcTariffsWeekday(DateTime entry, DateTime exit, IEnumerable<WeekdayTariffSection> sections)
         {
-
-            sections = sections.OrderBy(x => x.TariffEndTime);
-
-
-
+            var sectionList = sections.OrderBy(x => x.TariffEndTime).ToList();
             decimal tarif = 0;
-
             int tarifSegment = 0;
-
             var currentTime = new DateTime(1, 1, 1, entry.Hour, entry.Minute, 0);
-            var extiTime = new DateTime(1, 1, 1, exit.Hour, exit.Minute, 0);
+            var exitTime = new DateTime(1, 1, 1, exit.Hour, exit.Minute, 0);
 
-            while (currentTime < extiTime)
+            while (currentTime < exitTime)
             {
-                if (currentTime.Hour > sections.ElementAt(tarifSegment).TariffEndTime.Hour)
+                if (tarifSegment >= sectionList.Count)
+                    throw new InvalidOperationException("No tariff section configured for this time period. Check the weekday tariff setup.");
+
+                if (currentTime.Hour >= sectionList[tarifSegment].TariffEndTime.Hour)
                 {
                     tarifSegment++;
                     continue;
                 }
 
-                tarif = tarif + (sections.ElementAt(tarifSegment).TariffPrice / 4);
-                currentTime = currentTime.AddMinutes(15);
+                tarif += sectionList[tarifSegment].TariffPrice / BlocksPerHour;
+                currentTime = currentTime.AddMinutes(TariffBlockMinutes);
             }
-            return tarif;
 
+            return tarif;
         }
 
-        decimal CalcTariffsHoliiday(DateTime entry, DateTime exit, IEnumerable<HolidayTariffSection> sections)
+        private decimal CalcTariffsHoliday(DateTime entry, DateTime exit, IEnumerable<HolidayTariffSection> sections)
         {
-
-            sections = sections.OrderBy(x => x.TariffEndTime);
-
-
-
+            var sectionList = sections.OrderBy(x => x.TariffEndTime).ToList();
             decimal tarif = 0;
-
             int tarifSegment = 0;
-
             var currentTime = new DateTime(1, 1, 1, entry.Hour, entry.Minute, 0);
-            var extiTime = new DateTime(1, 1, 1, exit.Hour, exit.Minute, 0);
+            var exitTime = new DateTime(1, 1, 1, exit.Hour, exit.Minute, 0);
 
-
-            while (currentTime < extiTime)
+            while (currentTime < exitTime)
             {
-                if (currentTime.Hour > sections.ElementAt(tarifSegment).TariffEndTime.Hour)
+                if (tarifSegment >= sectionList.Count)
+                    throw new InvalidOperationException("No tariff section configured for this time period. Check the holiday tariff setup.");
+
+                if (currentTime.Hour >= sectionList[tarifSegment].TariffEndTime.Hour)
                 {
                     tarifSegment++;
                     continue;
                 }
 
-                tarif = tarif + (sections.ElementAt(tarifSegment).TariffPrice / 4);
-                currentTime = currentTime.AddMinutes(15);
+                tarif += sectionList[tarifSegment].TariffPrice / BlocksPerHour;
+                currentTime = currentTime.AddMinutes(TariffBlockMinutes);
             }
-            return tarif;
 
+            return tarif;
         }
 
-
-        public async Task<Ticket> GetNewTicket(int CarParkId)
+        public async Task<Ticket> GetNewTicket(int carParkId)
         {
-            
+            CarPark carPark = await _unitOfWork.CarPark.LoadWithFloors(carParkId);
+            List<Ticket> tickets = await _unitOfWork.Ticket.GetTicketsFromCarParkAsync(carParkId);
 
-            CarPark carPark = await  _unitOfWork.CarPark.LoadWithFloors(CarParkId);
+            int ticketId = Random.Shared.Next(TicketIdMin, TicketIdMax);
+            while (tickets.Any(t => t.TicketId == ticketId && t.ExitTime == DateTime.MinValue))
+            {
+                ticketId = Random.Shared.Next(TicketIdMin, TicketIdMax);
+            }
 
-            List<Ticket> tickets = _unitOfWork.Ticket.GetTicketsFromCarPark(CarParkId);
-
-            var ticketId = GenerateTicketId(tickets);
             var parkingLot = FindFreeParkingLot(carPark);
-
-
-
             parkingLot.IsOccupied = true;
-
             _unitOfWork.ParkingLot.Update(parkingLot);
             await _unitOfWork.Save();
 
+            Ticket newTicket = new Ticket
+            {
+                ParkingLot = parkingLot,
+                TicketId = ticketId,
+                EntryTime = DateTime.Now
+            };
 
-
-            Ticket NewTicket = new Ticket();
-            NewTicket.ParkingLot = parkingLot;
-            NewTicket.TicketId = ticketId;
-            NewTicket.EntryTime = DateTime.Now;
-            await _unitOfWork.Ticket.Add(NewTicket);
+            await _unitOfWork.Ticket.Add(newTicket);
             await _unitOfWork.Save();
 
-            return NewTicket;
+            return newTicket;
         }
-
     }
 }

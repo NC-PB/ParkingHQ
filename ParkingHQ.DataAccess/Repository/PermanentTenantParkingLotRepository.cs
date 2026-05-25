@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ParkingHQ.DataAccess.Repository.IRepository;
 using ParkingHQ.Models;
 using System;
@@ -18,26 +18,23 @@ namespace ParkingHQ.DataAccess.Repository
             _db = db;
         }
 
-        public void Save()
-        {
-            _db.SaveChanges();
-        }
-
         public void Update(PermanentTenantParkingLot obj)
         {
             _db.PermanentTenantParkingLots.Update(obj);
         }
 
-        public PermanentTenantParkingLot GetWithPropertysByPin(int Pin)
+        public async Task<PermanentTenantParkingLot> GetWithPropertysByPinAsync(int pin)
         {
-            var result = _db.PermanentTenantParkingLots.Include(x => x.ParkingLot).SingleOrDefault(x => x.Pin == Pin);
-            return result;
+            return await _db.PermanentTenantParkingLots
+                .Include(x => x.ParkingLot)
+                .SingleOrDefaultAsync(x => x.Pin == pin);
         }
 
-        public PermanentTenantParkingLot GetWithPropertysById(int id)
+        public async Task<PermanentTenantParkingLot> GetWithPropertysByIdAsync(int id)
         {
-            var result = _db.PermanentTenantParkingLots.Include(x => x.ParkingLot).SingleOrDefault(x => x.Id == id);
-            return result;
+            return await _db.PermanentTenantParkingLots
+                .Include(x => x.ParkingLot)
+                .SingleOrDefaultAsync(x => x.Id == id);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using ParkingHQ.Models;
+using ParkingHQ.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,9 +11,8 @@ namespace ParkingHQ.DataAccess.Repository.IRepository
     {
         void Update(Ticket obj);
 
-        public List<Ticket> GetTicketsFromCarPark(int Id);
+        public Task<List<Ticket>> GetTicketsFromCarParkAsync(int Id);
 
-        public Ticket GetTicketByTicketId(int Id);
-
+        public Task<Ticket> GetTicketByTicketIdAsync(int Id);
     }
 }

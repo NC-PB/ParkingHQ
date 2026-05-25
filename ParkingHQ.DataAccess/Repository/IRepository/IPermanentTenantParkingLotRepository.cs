@@ -1,4 +1,4 @@
-﻿using ParkingHQ.Models;
+using ParkingHQ.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,8 +11,7 @@ namespace ParkingHQ.DataAccess.Repository.IRepository
     {
         void Update(PermanentTenantParkingLot obj);
 
-        public PermanentTenantParkingLot GetWithPropertysByPin(int Pin);
-        public PermanentTenantParkingLot GetWithPropertysById(int id);
-
+        public Task<PermanentTenantParkingLot> GetWithPropertysByPinAsync(int pin);
+        public Task<PermanentTenantParkingLot> GetWithPropertysByIdAsync(int id);
     }
 }

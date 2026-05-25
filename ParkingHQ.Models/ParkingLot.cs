@@ -13,8 +13,8 @@ namespace ParkingHQ.Models
         [Key]
         public int Id { get; set; }
 
-        [DisplayName("Parkinglot Number")]
-        public int ParkinLotNumber { get; set; }
+        [DisplayName("Parking Lot Number")]
+        public int ParkingLotNumber { get; set; }
 
         [DisplayName("Is Occupied")]
 

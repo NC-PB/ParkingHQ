@@ -14,8 +14,8 @@ namespace ParkingHQ.Models
         [DisplayName("Tenant")]
         public PermanentTenant? PermanentTenant { get; set; }
 
-        [DisplayName("Parkinlot")]
-        public ParkingLot Parkinglot { get; set; }
+        [DisplayName("Parking Lot")]
+        public ParkingLot ParkingLot { get; set; }
 
         [DisplayName("Date")]
         public DateTime DateAndTime { get; set; }
@@ -23,7 +23,7 @@ namespace ParkingHQ.Models
         [DisplayName("Type")]
         public EntryExitType EntryExitType { get; set; }
 
-        public CarPark carPark { get; set; }
+        public CarPark CarPark { get; set; }
     }
 
     public enum EntryExitType

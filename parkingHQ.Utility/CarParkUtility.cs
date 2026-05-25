@@ -7,12 +7,6 @@ using System.Threading.Tasks;
 
 namespace ParkingHQ.Utility
 {
-    internal class CarParkUtility
-    {
-    }
-
-
-
     public static class CarParkHelper
     {
         public static Dictionary<string, int> GetParkingLotUsage(this CarPark carPark)
